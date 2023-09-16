@@ -13,7 +13,7 @@
 	<script
 		defer
 		async
-		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHMnz118xRAj130zJXl9S09mlcepfoUfY&callback=loadedGoogleMaps"
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHMnz118xRAj130zJXl9S09mlcepfoUfY&libraries=places&callback=loadedGoogleMaps"
 	>
 	</script>
 </svelte:head>
