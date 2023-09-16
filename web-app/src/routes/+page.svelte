@@ -4,13 +4,22 @@
 	let map;
 	let mapEl;
 	let mapBounds;
+	let markerLibrary;
 	let plantLocations = [];
+
 	const markers = new Map();
 
 	onMount(async () => {
 		map = new google.maps.Map(mapEl, {
 			center: { lat: -34.606, lng: -58.363 },
-			zoom: 8
+			mapId: 'cd7f658b49dc952f',
+			zoom: 8,
+			zoomControl: true,
+			mapTypeControl: false,
+			streetViewControl: false,
+			rotateControl: false,
+			scaleControl: false,
+			fullscreenControl: false
 		});
 
 		google.maps.event.addListener(map, 'idle', function () {
@@ -24,6 +33,8 @@
 				sw: { lat: sw.lat(), lng: sw.lng() }
 			};
 		});
+
+		markerLibrary = await google.maps.importLibrary('marker');
 	});
 
 	$: {
@@ -56,9 +67,12 @@
 		plantLocations
 			.filter((l) => !markers.has(makeLocationKey(l)))
 			.forEach((l) => {
-				const marker = new google.maps.Marker({
+				const marker = new markerLibrary.AdvancedMarkerElement({
 					position: { lat: l.lat, lng: l.lng },
-					map: map
+					map: map,
+					content: new markerLibrary.PinElement({
+						scale: 0.75
+					}).element
 				});
 
 				markers.set(makeLocationKey(l), marker);
@@ -66,4 +80,7 @@
 	}
 </script>
 
-<div bind:this={mapEl} class="h-full w-full" />
+<div class="h-full w-full relative">
+	<div bind:this={mapEl} class="h-full w-full z-0" />
+	<div class="absolute top-4 left-4 z-10 bg-primary-900">FLOATING SHIT</div>
+</div>
