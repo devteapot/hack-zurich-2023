@@ -1,8 +1,8 @@
-<script lang="ts">
+<script>
 	import initMap from '$lib/map/initMap';
 	import { onMount } from 'svelte';
 
-	let mapEl: HTMLElement;
+	let mapEl;
 
 	onMount(async () => {
 		const map = initMap(mapEl);

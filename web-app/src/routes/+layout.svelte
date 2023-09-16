@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 	import '../app.postcss';
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
 
