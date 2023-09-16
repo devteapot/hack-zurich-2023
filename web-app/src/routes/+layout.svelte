@@ -29,5 +29,4 @@
 	{#if !loadingGoogleMaps}
 		<slot />
 	{/if}
-	<slot />
 </AppShell>
