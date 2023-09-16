@@ -1,8 +1,17 @@
 import { json } from '@sveltejs/kit';
 import functionsBaseURL from '$lib/functionsBaseURL';
 
-export async function GET({ request }) {
-  const res = await fetch(`${functionsBaseURL}/plant-locations?limit=100`, { method: "GET", headers: { 'Content-Type': 'application/json' } });
-  const data = await res.json()
-  return json(data);
+export async function POST({ request }) {
+  const requestBody = await request.json()
+
+  const res = await fetch(
+    `${functionsBaseURL}/plant-locations`,
+    {
+      method: "POST",
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    }
+  );
+
+  return json(await res.json());
 }
