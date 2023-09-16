@@ -1,44 +1,33 @@
 <script lang="ts">
 	import '../app.postcss';
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
+
+	let loadingGoogleMaps = true;
+
+	window.loadedGoogleMaps = function ready() {
+		loadingGoogleMaps = false;
+	};
 </script>
 
-<!-- App Shell -->
+<svelte:head>
+	<script
+		defer
+		async
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHMnz118xRAj130zJXl9S09mlcepfoUfY&callback=loadedGoogleMaps"
+	>
+	</script>
+</svelte:head>
+
 <AppShell>
 	<svelte:fragment slot="header">
-		<!-- App Bar -->
 		<AppBar>
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">Skeleton</strong>
-			</svelte:fragment>
-			<svelte:fragment slot="trail">
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://discord.gg/EXqV7W8MtY"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Discord
-				</a>
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://twitter.com/SkeletonUI"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Twitter
-				</a>
-				<a
-					class="btn btn-sm variant-ghost-surface"
-					href="https://github.com/skeletonlabs/skeleton"
-					target="_blank"
-					rel="noreferrer"
-				>
-					GitHub
-				</a>
+				<strong class="text-xl uppercase">YOLO</strong>
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
-	<!-- Page Route Content -->
+	{#if !loadingGoogleMaps}
+		<slot />
+	{/if}
 	<slot />
 </AppShell>
