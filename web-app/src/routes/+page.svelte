@@ -1,13 +1,11 @@
 <script lang="ts">
+	import initMap from '$lib/map/initMap';
 	import { onMount } from 'svelte';
 
 	let mapEl: HTMLElement;
 
 	onMount(async () => {
-		const map = new google.maps.Map(mapEl, {
-			center: { lat: -34.606, lng: -58.363 },
-			zoom: 8
-		});
+		const map = initMap(mapEl);
 
 		const data = [
 			{ lat: -34.606, lng: -58.363 },

@@ -4,7 +4,7 @@
 
 	let loadingGoogleMaps = true;
 
-	window.loadedGoogleMaps = function ready() {
+	window.loadedGoogleMaps = () => {
 		loadingGoogleMaps = false;
 	};
 </script>
