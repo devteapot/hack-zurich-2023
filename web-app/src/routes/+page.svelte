@@ -12,18 +12,26 @@
 	let directionsRenderer;
 
 	let mapEl;
+	let plantInputEl;
+
 	let mapBounds;
 
 	let markerLibrary;
 
-	let options = [];
 	let plantLocations = [];
+	let plantLocationOptions = [];
 
 	let routeType = 'Outbound';
 	let routeFromLabel = '';
 	let routeToLabel = '';
 	let routeFromValue = '';
 	let routeToValue = '';
+	let cargoWeight;
+	let truckEmission;
+
+	let plantSearch = '';
+	let plantSearchValue;
+	let plantSearchOptions = [];
 
 	let tabSet = 0;
 
@@ -61,6 +69,57 @@
 
 		directionsService = new google.maps.DirectionsService();
 		directionsRenderer = new google.maps.DirectionsRenderer();
+
+		// const searchBox = new google.maps.places.SearchBox(plantInputEl);
+		// searchBox.addListener('places_changed', () => {
+		// 	const places = searchBox.getPlaces();
+
+		// 	if (places.length == 0) {
+		// 		return;
+		// 	}
+
+		// 	// Clear out the old markers.
+		// 	markers.forEach((marker) => {
+		// 		marker.setMap(null);
+		// 	});
+		// 	markers = [];
+
+		// 	// For each place, get the icon, name and location.
+		// 	const bounds = new google.maps.LatLngBounds();
+
+		// 	places.forEach((place) => {
+		// 		if (!place.geometry || !place.geometry.location) {
+		// 			console.log('Returned place contains no geometry');
+		// 			return;
+		// 		}
+
+		// 		const icon = {
+		// 			url: place.icon,
+		// 			size: new google.maps.Size(71, 71),
+		// 			origin: new google.maps.Point(0, 0),
+		// 			anchor: new google.maps.Point(17, 34),
+		// 			scaledSize: new google.maps.Size(25, 25)
+		// 		};
+
+		// 		// Create a marker for each place.
+		// 		markers.push(
+		// 			new google.maps.Marker({
+		// 				map,
+		// 				icon,
+		// 				title: place.name,
+		// 				position: place.geometry.location
+		// 			})
+		// 		);
+
+		// 		if (place.geometry.viewport) {
+		// 			// Only geocodes have viewport.
+		// 			bounds.union(place.geometry.viewport);
+		// 		} else {
+		// 			bounds.extend(place.geometry.location);
+		// 		}
+		// 	});
+		// 	map.fitBounds(bounds);
+		// });
 
 		markerLibrary = await google.maps.importLibrary('marker');
 	});
@@ -106,7 +165,7 @@
 	}
 
 	$: {
-		options = plantLocations.map((l) => ({
+		plantLocationOptions = plantLocations.map((l) => ({
 			value: l.code ? makeLocationKey(l) : l.name,
 			label: makeLocationLabel(l)
 		}));
@@ -140,15 +199,19 @@
 			markers.forEach((v) => v.setMap(map));
 		}
 	}
+
+	$: {
+	}
 </script>
 
 <div class="h-full w-full relative">
 	<div bind:this={mapEl} class="h-full w-full z-0" />
 	<div class="absolute top-4 left-4 z-10 bg-primary-backdrop-token p-4 card">
 		<TabGroup>
-			<Tab bind:group={tabSet} name="tab1" value={0}>Add</Tab>
-			<Tab bind:group={tabSet} name="tab2" value={1}>Outbound</Tab>
-			<Tab bind:group={tabSet} name="tab3" value={2}>Inbound</Tab>
+			<Tab bind:group={tabSet} name="tab1" value={0}>Plant</Tab>
+			<Tab bind:group={tabSet} name="tab2" value={1}>Route</Tab>
+			<Tab bind:group={tabSet} name="tab3" value={2}>Outbound</Tab>
+			<Tab bind:group={tabSet} name="tab4" value={3}>Inbound</Tab>
 			<svelte:fragment slot="panel">
 				{#if tabSet === 0}
 					<div class="flex flex-col">
@@ -156,14 +219,35 @@
 							<input
 								class="input"
 								type="search"
-								name="demo"
+								name="plant"
+								bind:value={plantSearch}
+								bind:this={plantInputEl}
+								placeholder="Search plant location"
+							/>
+							<div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
+								<Autocomplete
+									bind:input={plantSearch}
+									options={plantSearchOptions}
+									on:selection={(event) => {}}
+								/>
+							</div>
+						</div>
+						<button class="btn" disabled={!plantSearchValue}>Add plant</button>
+					</div>
+				{:else if tabSet === 1}
+					<div class="flex flex-col">
+						<div>
+							<input
+								class="input"
+								type="search"
+								name="routeFrom"
 								bind:value={routeFromLabel}
-								placeholder="Search..."
+								placeholder="Search departure"
 							/>
 							<div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
 								<Autocomplete
 									bind:input={routeFromLabel}
-									{options}
+									options={plantLocationOptions}
 									on:selection={(event) => {
 										routeFromLabel = event.detail.label;
 										routeFromValue = event.detail.value;
@@ -175,14 +259,14 @@
 							<input
 								class="input"
 								type="search"
-								name="demo"
+								name="routeTo"
 								bind:value={routeToLabel}
-								placeholder="Search..."
+								placeholder="Search destination"
 							/>
 							<div class="card w-full max-w-sm max-h-48 p-4 overflow-y-auto" tabindex="-1">
 								<Autocomplete
 									bind:input={routeToLabel}
-									{options}
+									options={plantLocationOptions}
 									on:selection={(event) => {
 										routeToLabel = event.detail.label;
 										routeToValue = event.detail.value;
@@ -190,6 +274,20 @@
 								/>
 							</div>
 						</div>
+						<input
+							class="input"
+							type="number"
+							name="weight"
+							placeholder="Weight"
+							bind:value={cargoWeight}
+						/>
+						<input
+							class="input"
+							type="number"
+							name="emission"
+							placeholder="Emission"
+							bind:value={truckEmission}
+						/>
 						<RadioGroup>
 							<RadioItem bind:group={routeType} name="justify" value={'Outbound'}>
 								Outbound
@@ -198,27 +296,31 @@
 						</RadioGroup>
 						<button
 							class="btn"
-							disabled={!routeFromValue || !routeToValue}
+							disabled={!routeFromValue || !routeToValue || !cargoWeight || !truckEmission}
 							on:click={() => {
 								// TODO: add map and remove find
 								const from = plantLocations.find((l) => routeFromValue === makeLocationKey(l));
 								const to = plantLocations.find((l) => routeToValue === makeLocationKey(l));
 								const id = uuidv4();
 
+								const route = { from, to, id, truckEmission, cargoWeight };
+
 								if (routeType === 'Outbound') {
-									outboundRoutes.push({ from, to, id });
+									outboundRoutes.push(route);
 								} else {
-									inboundRoutes.push({ from, to, id });
+									inboundRoutes.push(route);
 								}
 
 								routeFromLabel = '';
 								routeToLabel = '';
 								routeFromValue = '';
 								routeToValue = '';
-							}}>Add</button
+								truckEmission = undefined;
+								cargoWeight = undefined;
+							}}>Add route</button
 						>
 					</div>
-				{:else if tabSet === 1}
+				{:else if tabSet === 2}
 					<RouteList
 						bind:routes={outboundRoutes}
 						onSelect={(route) => {
@@ -229,7 +331,7 @@
 							}
 						}}
 					/>
-				{:else if tabSet === 2}
+				{:else if tabSet === 3}
 					<RouteList
 						bind:routes={inboundRoutes}
 						onSelect={(route) => {
