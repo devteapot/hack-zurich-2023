@@ -1,24 +1,24 @@
 <script>
-	import initMap from '$lib/map/initMap';
 	import { onMount } from 'svelte';
 
 	let mapEl;
+	let locations;
 
 	onMount(async () => {
-		const map = initMap(mapEl);
+		const map = new google.maps.Map(mapEl, {
+			center: { lat: -34.606, lng: -58.363 },
+			zoom: 8
+		});
 
-		const data = [
-			{ lat: -34.606, lng: -58.363 },
-			{ lat: -34.605, lng: -58.362 },
-			{ lat: -34.604, lng: -58.361 },
-			{ lat: -34.603, lng: -58.36 },
-			{ lat: -34.602, lng: -58.364 },
-			{ lat: -34.601, lng: -58.365 }
-		];
+		const res = await fetch('/api/plants', {
+			method: 'GET',
+			headers: { 'Content-Type': 'application/json' }
+		});
+		const data = await res.json();
 
 		data.forEach((entry) => {
 			new google.maps.Marker({
-				position: entry,
+				position: { lat: entry.lat, lng: entry.long },
 				map: map
 			});
 		});
