@@ -1,20 +1,28 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Loader } from '@googlemaps/js-api-loader';
 
 	let mapEl: HTMLElement;
 
 	onMount(async () => {
-		const loader = new Loader({
-			apiKey: 'AIzaSyAHMnz118xRAj130zJXl9S09mlcepfoUfY',
-			version: 'weekly'
-		});
-
-		const { Map } = await loader.importLibrary('maps');
-
-		new Map(mapEl, {
+		const map = new google.maps.Map(mapEl, {
 			center: { lat: -34.606, lng: -58.363 },
 			zoom: 8
+		});
+
+		const data = [
+			{ lat: -34.606, lng: -58.363 },
+			{ lat: -34.605, lng: -58.362 },
+			{ lat: -34.604, lng: -58.361 },
+			{ lat: -34.603, lng: -58.36 },
+			{ lat: -34.602, lng: -58.364 },
+			{ lat: -34.601, lng: -58.365 }
+		];
+
+		data.forEach((entry) => {
+			new google.maps.Marker({
+				position: entry,
+				map: map
+			});
 		});
 	});
 </script>
