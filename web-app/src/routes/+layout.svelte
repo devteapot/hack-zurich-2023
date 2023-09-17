@@ -22,7 +22,7 @@
 	<svelte:fragment slot="header">
 		<AppBar>
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">🚛 Trucking simulator</strong>
+				<strong class="text-xl uppercase">🚛 Truckathon</strong>
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
