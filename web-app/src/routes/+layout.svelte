@@ -1,10 +1,10 @@
-<script lang="ts">
+<script>
 	import '../app.postcss';
 	import { AppShell, AppBar } from '@skeletonlabs/skeleton';
 
 	let loadingGoogleMaps = true;
 
-	window.loadedGoogleMaps = function ready() {
+	window.loadedGoogleMaps = () => {
 		loadingGoogleMaps = false;
 	};
 </script>
@@ -13,7 +13,7 @@
 	<script
 		defer
 		async
-		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHMnz118xRAj130zJXl9S09mlcepfoUfY&callback=loadedGoogleMaps"
+		src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAHMnz118xRAj130zJXl9S09mlcepfoUfY&libraries=places&callback=loadedGoogleMaps"
 	>
 	</script>
 </svelte:head>
@@ -22,12 +22,11 @@
 	<svelte:fragment slot="header">
 		<AppBar>
 			<svelte:fragment slot="lead">
-				<strong class="text-xl uppercase">YOLO</strong>
+				<strong class="text-xl uppercase">🚛 Truckathon</strong>
 			</svelte:fragment>
 		</AppBar>
 	</svelte:fragment>
 	{#if !loadingGoogleMaps}
 		<slot />
 	{/if}
-	<slot />
 </AppShell>
