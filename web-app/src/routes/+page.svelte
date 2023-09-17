@@ -408,22 +408,18 @@
 				{:else if tabSet === 4}
 					<div class="card flex flex-col">
 						<button class="btn" on:click={optimiseRoutes}>Optimise routes</button>
-						<!-- {#each optimisedRoutes as or}
-							<button>
+						{#each optimisedRoutes as or}
+							<button on:click={() => {}}>
 								<div>
 									<p>
-										{makeLocationLabel(inRoutesMap[or.inbound].from)} - {makeLocationLabel(
-											inRoutesMap[or.inbound].to
-										)}
+										{makeLocationLabel(or.inbound.from)} - {makeLocationLabel(or.inbound.to)}
 									</p>
 									<p>
-										{makeLocationLabel(outRoutesMap[or.outbound].from)} - {makeLocationLabel(
-											outRoutesMap[or.outbound].to
-										)}
+										{makeLocationLabel(or.outbound.from)} - {makeLocationLabel(or.outbound.to)}
 									</p>
 								</div>
 							</button>
-						{/each} -->
+						{/each}
 					</div>
 				{/if}
 			</svelte:fragment>
