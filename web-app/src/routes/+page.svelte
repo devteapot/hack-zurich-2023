@@ -7,6 +7,9 @@
 	import { makeLocationKey, makeLocationLabel } from '$lib/routeHelpers';
 	import coordinatesToGeometry from '$lib/coordinatesToGeometry';
 	import RouteList from '../lib/components/RouteList.svelte';
+	import { localStorageStore } from '@skeletonlabs/skeleton';
+
+	const plantStore = localStorageStore('plantStore', { inboundRoutes: [], outboundRoutes: [] });
 
 	let map;
 	let directionsService;
@@ -41,12 +44,12 @@
 
 	const markers = new Map();
 
-	let outboundRoutes = [];
-	let inboundRoutes = [];
-
 	let optimisedRoutes = [];
 
-	let selectedRoute;
+	let selectedRoutes = [];
+	$: isSingleRouteSelected = selectedRoutes.length === 1;
+	$: areMultipleRoutesSelected = selectedRoutes.length > 1;
+	$: isRouteSelected = selectedRoutes.length > 0;
 
 	onMount(async () => {
 		map = new google.maps.Map(mapEl, {
@@ -92,10 +95,13 @@
 		fetch('/api/optimise-routes', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ inboundRoutes, outboundRoutes })
+			body: JSON.stringify({
+				inboundRoutes: $plantStore.inboundRoutes,
+				outboundRoutes: $plantStore.outboundRoutes
+			})
 		}).then((res) => {
 			res.json().then((ors) => {
-				optimisedRoutes = ors;
+				optimisedRoutes = ors.filter(({ inbound }) => inbound);
 			});
 		});
 	};
@@ -147,7 +153,7 @@
 			.forEach((l) => {
 				const marker = new markerLibrary.AdvancedMarkerElement({
 					position: { lat: l.lat, lng: l.lng },
-					map: selectedRoute ? null : map,
+					map: isRouteSelected ? null : map,
 					content: new markerLibrary.PinElement({
 						scale: 0.75
 					}).element
@@ -165,12 +171,28 @@
 	}
 
 	$: {
-		if (selectedRoute) {
-			const { from, to } = selectedRoute;
+		if (isRouteSelected) {
+			let { from, to } = selectedRoutes[0];
+
+			if (areMultipleRoutesSelected) {
+				to = selectedRoutes[1].to;
+			}
 
 			const request = {
 				origin: { lat: from.lat, lng: from.lng },
 				destination: { lat: to.lat, lng: to.lng },
+				waypoints: areMultipleRoutesSelected
+					? [
+							{
+								location: { lat: selectedRoutes[0].to.lat, lng: selectedRoutes[0].to.lng },
+								stopover: true
+							},
+							{
+								location: { lat: selectedRoutes[1].from.lat, lng: selectedRoutes[1].from.lng },
+								stopover: true
+							}
+					  ]
+					: undefined,
 				travelMode: 'DRIVING'
 			};
 
@@ -186,7 +208,7 @@
 	}
 
 	$: {
-		if (selectedRoute) {
+		if (isRouteSelected) {
 			markers.forEach((v) => v.setMap(null));
 		} else {
 			markers.forEach((v) => v.setMap(map));
@@ -366,9 +388,9 @@
 								};
 
 								if (routeType === 'Outbound') {
-									outboundRoutes.push(route);
+									$plantStore.outboundRoutes.push(route);
 								} else {
-									inboundRoutes.push(route);
+									$plantStore.inboundRoutes.push(route);
 								}
 
 								routeFromLabel = '';
@@ -385,38 +407,57 @@
 					</div>
 				{:else if tabSet === 2}
 					<RouteList
-						bind:routes={outboundRoutes}
+						bind:routes={$plantStore.outboundRoutes}
 						onSelect={(route) => {
-							if (selectedRoute && selectedRoute.id === route.id) {
-								selectedRoute = undefined;
+							if (isSingleRouteSelected && selectedRoutes.some((sr) => sr.id === route.id)) {
+								selectedRoutes = [];
 							} else {
-								selectedRoute = route;
+								selectedRoutes = [route];
 							}
 						}}
 					/>
 				{:else if tabSet === 3}
 					<RouteList
-						bind:routes={inboundRoutes}
+						bind:routes={$plantStore.inboundRoutes}
 						onSelect={(route) => {
-							if (selectedRoute && selectedRoute.id === route.id) {
-								selectedRoute = undefined;
+							if (isSingleRouteSelected && selectedRoutes.some((sr) => sr.id === route.id)) {
+								selectedRoutes = [];
 							} else {
-								selectedRoute = route;
+								selectedRoutes = [route];
 							}
 						}}
 					/>
 				{:else if tabSet === 4}
-					<div class="card flex flex-col">
+					<div class="flex flex-col">
 						<button class="btn" on:click={optimiseRoutes}>Optimise routes</button>
-						{#each optimisedRoutes as or}
-							<button on:click={() => {}}>
-								<div>
-									<p>
-										{makeLocationLabel(or.inbound.from)} - {makeLocationLabel(or.inbound.to)}
-									</p>
-									<p>
-										{makeLocationLabel(or.outbound.from)} - {makeLocationLabel(or.outbound.to)}
-									</p>
+						{#each optimisedRoutes as { outbound, inbound, savings }}
+							<button
+								on:click={() => {
+									if (areMultipleRoutesSelected) {
+										selectedRoutes = [];
+									} else {
+										selectedRoutes = [outbound, inbound];
+									}
+								}}
+								class="mb-2"
+							>
+								<div class="card">
+									<div>
+										<p>
+											{makeLocationLabel(outbound.from)} - {makeLocationLabel(outbound.to)}
+										</p>
+										<p>
+											{makeLocationLabel(inbound.from)} - {makeLocationLabel(inbound.to)}
+										</p>
+									</div>
+									<div class="flex flex-col">
+										<p>
+											💨 Emission reduction: {((savings.normal_emission - savings.opt_emission) /
+												savings.normal_emission) *
+												100}%
+										</p>
+										<p>💸 Saved costs: {savings.cost_save}$</p>
+									</div>
 								</div>
 							</button>
 						{/each}
