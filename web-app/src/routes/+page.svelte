@@ -276,8 +276,8 @@
 					</div>
 				{:else if tabSet === 1}
 					<div class="flex flex-col">
-						<div class="flex">
-							<div>
+						<div class="flex mb-2">
+							<div class="mr-2">
 								<input
 									class="input"
 									type="search"
@@ -316,16 +316,16 @@
 								</div>
 							</div>
 						</div>
-						<div class="flex">
+						<div class="flex mb-2">
 							<input
-								class="input"
+								class="input mr-2"
 								type="number"
 								name="maxWeight"
 								placeholder="Max weight"
 								bind:value={maxCargoWeight}
 							/>
 							<input
-								class="input"
+								class="input mr-2"
 								type="number"
 								name="weight"
 								placeholder="Weight"
@@ -339,9 +339,9 @@
 								bind:value={costPerTon}
 							/>
 						</div>
-						<div class="flex">
+						<div class="flex mb-2">
 							<input
-								class="input"
+								class="input mr-2"
 								type="number"
 								name="emission"
 								placeholder="Emission"
